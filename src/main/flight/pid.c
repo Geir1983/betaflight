@@ -95,7 +95,7 @@ void pidResetErrorGyro(void)
 
 const angle_index_t rcAliasToAngleIndexMap[] = { AI_ROLL, AI_PITCH };
 
-static filterStatePt1_t PTermState[3], DTermState[3];
+static filterStatePt1_t yawPTermState, DTermState[3];
 
 static void pidLuxFloat(pidProfile_t *pidProfile, controlRateConfig_t *controlRateConfig,
         uint16_t max_angle_inclination, rollAndPitchTrims_t *angleTrim, rxConfig_t *rxConfig)
@@ -173,9 +173,9 @@ static void pidLuxFloat(pidProfile_t *pidProfile, controlRateConfig_t *controlRa
         // -----calculate P component
         PTerm = RateError * pidProfile->P_f[axis] * PIDweight[axis] / 100;
 
-        // Pterm low pass
-        if (pidProfile->pterm_cut_hz) {
-            PTerm = filterApplyPt1(PTerm, &PTermState[axis], pidProfile->pterm_cut_hz, dT);
+        // Yaw Pterm low pass
+        if (axis == YAW && pidProfile->yaw_pterm_cut_hz) {
+            PTerm = filterApplyPt1(PTerm, &yawPTermState, pidProfile->yaw_pterm_cut_hz, dT);
         }
 
         // -----calculate I component.
@@ -278,9 +278,9 @@ static void pidMultiWii23(pidProfile_t *pidProfile, controlRateConfig_t *control
 
         PTerm -= ((int32_t)(gyroADC[axis] / 4) * dynP8[axis]) >> 6;   // 32 bits is needed for calculation
 
-        // Pterm low pass
-        if (pidProfile->pterm_cut_hz) {
-            PTerm = filterApplyPt1(PTerm, &PTermState[axis], pidProfile->pterm_cut_hz, dT);
+        // Yaw Pterm low pass
+        if (axis == YAW && pidProfile->yaw_pterm_cut_hz) {
+            PTerm = filterApplyPt1(PTerm, &yawPTermState, pidProfile->yaw_pterm_cut_hz, dT);
         }
 
         delta = (gyroADC[axis] - lastGyro[axis]) / 4;   // 16 bits is ok here, the dif between 2 consecutive gyro reads is limited to 800
@@ -420,9 +420,9 @@ static void pidMultiWiiRewrite(pidProfile_t *pidProfile, controlRateConfig_t *co
         // -----calculate P component
         PTerm = (RateError * pidProfile->P8[axis] * PIDweight[axis] / 100) >> 7;
 
-        // Pterm low pass
-        if (pidProfile->pterm_cut_hz) {
-            PTerm = filterApplyPt1(PTerm, &PTermState[axis], pidProfile->pterm_cut_hz, dT);
+        // Yaw Pterm low pass
+        if (axis == YAW && pidProfile->yaw_pterm_cut_hz) {
+            PTerm = filterApplyPt1(PTerm, &yawPTermState, pidProfile->yaw_pterm_cut_hz, dT);
         }
 
         // -----calculate I component

@@ -26,6 +26,7 @@
 #include "common/color.h"
 #include "common/axis.h"
 #include "common/maths.h"
+#include "common/filter.h"
 
 #include "drivers/sensor.h"
 #include "drivers/accgyro.h"
@@ -177,8 +178,7 @@ static void resetPidProfile(pidProfile_t *pidProfile)
     pidProfile->D8[PIDVEL] = 1;
 
     pidProfile->yaw_p_limit = YAW_P_LIMIT_MAX;
-    pidProfile->gyro_cut_hz = 0;
-    pidProfile->pterm_cut_hz = 0;
+    pidProfile->yaw_pterm_cut_hz = 0;
     pidProfile->dterm_cut_hz = 0;
 
     pidProfile->P_f[ROLL] = 1.4f;     // new PID with preliminary defaults test carefully
@@ -477,6 +477,8 @@ static void resetConf(void)
     masterConfig.looptime = 3500;
     masterConfig.emf_avoidance = 0;
     masterConfig.i2c_overclock = 0;
+    masterConfig.syncGyroToLoop = 0;
+    masterConfig.syncGyroToLoopDenom = 1;
 
     resetPidProfile(&currentProfile->pidProfile);
 
@@ -492,6 +494,8 @@ static void resetConf(void)
     currentProfile->accz_lpf_cutoff = 5.0f;
     currentProfile->accDeadband.xy = 40;
     currentProfile->accDeadband.z = 40;
+
+    currentProfile->gyro_soft_filter = 0;   // no filtering by default
 
     resetBarometerConfig(&currentProfile->barometerConfig);
 
@@ -589,6 +593,7 @@ static void resetConf(void)
     masterConfig.escAndServoConfig.maxthrottle = 2000;
     masterConfig.motor_pwm_rate = 32000;
     masterConfig.looptime = 2000;
+    masterConfig.syncGyroToLoop = 0;
     currentProfile->pidProfile.pidController = 3;
     currentProfile->pidProfile.P8[ROLL] = 36;
     currentProfile->pidProfile.P8[PITCH] = 36;
@@ -717,7 +722,7 @@ void activateConfig(void)
         &currentProfile->pidProfile
     );
 
-    useGyroConfig(&masterConfig.gyroConfig);
+    useGyroConfig(&masterConfig.gyroConfig, filterGetFIRCoefficientsTable(currentProfile->gyro_soft_filter));;
 
 #ifdef TELEMETRY
     telemetryUseConfig(&masterConfig.telemetryConfig);
@@ -1057,4 +1062,3 @@ uint32_t featureMask(void)
 {
     return masterConfig.enabledFeatures;
 }
-

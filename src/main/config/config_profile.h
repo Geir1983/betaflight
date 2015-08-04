@@ -34,6 +34,8 @@ typedef struct profile_s {
 
     barometerConfig_t barometerConfig;
 
+    uint8_t gyro_soft_filter;
+
     uint8_t acc_unarmedcal;                 // turn automatic acc compensation on/off
 
     modeActivationCondition_t modeActivationConditions[MAX_MODE_ACTIVATION_CONDITION_COUNT];
