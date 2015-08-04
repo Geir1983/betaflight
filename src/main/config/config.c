@@ -400,7 +400,7 @@ static void resetConf(void)
     masterConfig.current_profile_index = 0;     // default profile
     masterConfig.gyro_cmpf_factor = 600;        // default MWC
     masterConfig.gyro_cmpfm_factor = 250;       // default MWC
-    masterConfig.gyro_lpf = 42;                 // supported by all gyro drivers now. In case of ST gyro, will default to 32Hz instead
+    masterConfig.gyro_lpf = 3;                 // supported by all gyro drivers now. In case of ST gyro, will default to 32Hz instead
 
     resetAccelerometerTrims(&masterConfig.accZero);
 
@@ -477,6 +477,8 @@ static void resetConf(void)
     masterConfig.looptime = 3500;
     masterConfig.emf_avoidance = 0;
     masterConfig.i2c_overclock = 0;
+    masterConfig.gyroSync = 0;
+    masterConfig.gyroSyncDenominator = 1;
 
     resetPidProfile(&currentProfile->pidProfile);
 
@@ -1057,4 +1059,3 @@ uint32_t featureMask(void)
 {
     return masterConfig.enabledFeatures;
 }
-
